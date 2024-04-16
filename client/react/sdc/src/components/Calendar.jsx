@@ -534,6 +534,16 @@ const Calendar = () => {
 				</div>
 			}
 
+{
+	loadingDaysFiles
+	&&
+	<div className="panel-loading">
+		<div className="loading">
+			<img src={loading_path} alt="" />
+		</div>
+	</div>
+}
+
 		</div>
 
 	);

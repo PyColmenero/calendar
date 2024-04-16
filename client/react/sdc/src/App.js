@@ -13,8 +13,8 @@ export default function App() {
 
       <Router>
         <Routes>
-          <Route exact path="/calendar/" element={<CalendarList />} />
-          <Route exact path="/calendar/v/:id" element={<Calendar />} />
+          {/* <Route exact path="/diario/" element={<CalendarList />} /> */}
+          <Route exact path="/calendar/" element={<Calendar />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
