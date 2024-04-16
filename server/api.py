@@ -52,7 +52,7 @@ def update_calendar_event(event_id):
     event = Calendar.query.get(event_id)
     if event is None:
         return jsonify({'message': 'Calendar event not found'}), 404
-    
+
     data = request.json
     event.name = data.get('name', event.name)
     event.description = data.get('description', event.description)
@@ -64,7 +64,7 @@ def delete_calendar_event(event_id):
     event = Calendar.query.get(event_id)
     if event is None:
         return jsonify({'message': 'Calendar event not found'}), 404
-    
+
     db.session.delete(event)
     db.session.commit()
     return jsonify({'message': 'Calendar event deleted successfully'}), 200

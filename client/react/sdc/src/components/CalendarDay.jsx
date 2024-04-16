@@ -221,8 +221,6 @@ function CalendarDay({ selectedDay, calendarID, dayFiles, setDayFiles, fetchDays
 										}
 									</div>
 							}
-
-
 						</div>
 					</div>
 

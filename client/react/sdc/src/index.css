@@ -85,7 +85,7 @@ h1 {
 	padding: .6rem;
 	padding-right: 0;
 	display: flex;
-	overflow-x: scroll;
+	/* overflow-x: scroll; */
 }
 
 .add-file {
@@ -95,7 +95,7 @@ h1 {
 	justify-content: center;
 	align-items: center;
 	font-size: 2rem;
-	background-color: rgb(241, 241, 241);
+	background-color: rgba(72, 72, 72, 0.263)
 }
 
 .file {
@@ -105,7 +105,7 @@ h1 {
 	justify-content: center;
 	align-items: center;
 	font-size: 2rem;
-	background-color: rgb(136, 136, 136);
+	background-color: rgb(40, 40, 40);
 	margin-right: .6rem;
 
 	background-size: cover;
@@ -113,7 +113,7 @@ h1 {
 }
 
 .loading-gap {
-	width: 48px;
+	/* width: 48px; */
 	height: 24px;
 }
 
