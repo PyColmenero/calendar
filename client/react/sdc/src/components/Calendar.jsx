@@ -29,11 +29,13 @@ const Calendar = () => {
 	const [selectedDay, setSelectedDay] = useState(undefined);
 	const [loadingContent, setLoadingContent] = useState(true);
 	const [calendarFiles, setCalendarFiles] = useState(undefined);
+	const [calendarComments, setCalendarComments] = useState(undefined);
 	const [textareaValue, setTextareaValue] = useState('');
 	const [dayFiles, setDayFiles] = useState([]);
 	const [loadingDaysFiles, setLoadingDaysFiles] = useState(true);
 	const [synchronized, setSynchronized] = useState(true);
 	const [loadingUpdate, setLoadingUpdate] = useState(false);
+	const [renderingMode, setRenderingMode] = useState(undefined);
 
 	const updateDayContent = async (calendarID, current_date, textareaValue) => {
 
@@ -119,7 +121,7 @@ const Calendar = () => {
 	const compressImage = async (imageFile) => {
 		const options = {
 			maxSizeMB: 1, // Maximum file size after compression
-			maxWidthOrHeight: 600, // Maximum width or height of the image
+			maxWidthOrHeight: 1000, // Maximum width or height of the image
 			fileType: 'image/webp', // Convert to WebP format
 		};
 		const compressedBlob = await imageCompression(imageFile, options);
@@ -129,6 +131,7 @@ const Calendar = () => {
 		try {
 			const url = `https://${API_HOST}/calendar/php/Files.php?calendar_id=${calendarID}`;
 			console.log(url);
+
 			const response = await fetch(
 				url,
 				{
@@ -145,6 +148,30 @@ const Calendar = () => {
 
 		} catch (error) {
 			setCalendarFiles(null);
+			console.error("Error fetching calendars:", error);
+		}
+	};
+	const fetchDaysComments = async () => {
+		try {
+			const url = `https://${API_HOST}/calendar/php/Comments.php?calendar_id=${calendarID}`;
+			console.log(url);
+
+			const response = await fetch(
+				url,
+				{
+					method: 'GET',
+					mode: 'cors'
+				}
+			);
+			const data = await response.json();
+
+			// console.log("calendar files: ", data);
+
+			setCalendarComments(data);
+			setLoadingDaysFiles(false);
+
+		} catch (error) {
+			setCalendarComments(null);
 			console.error("Error fetching calendars:", error);
 		}
 	};
@@ -281,6 +308,9 @@ const Calendar = () => {
 	if (calendarFiles === undefined) {
 		fetchDaysFile();
 	}
+	if (calendarComments === undefined) {
+		fetchDaysComments();
+	}
 
 	const getFirstDayOffset = (year, month) => {
 		const firstDay = new Date(year, month, 1).getDay(); // 0 for Sunday, 1 for Monday, etc.
@@ -318,233 +348,254 @@ const Calendar = () => {
 	});
 	// console.log(today_date);
 
+	// let classname_calendar = "calendar_2x6";
+	let classname_calendar = "calendar_1x12";
+
 	return (
 
-		<div className="calendar">
-			{/* <div className="container">
+		<main>
+
+			<div className={classname_calendar}>
+				{/* <div className="container">
 				<div className="row"> */}
-			{months.map((month, index) => {
+				{months.map((month, index) => {
 
-				const firstDayOffset = getFirstDayOffset(year, index);
+					const firstDayOffset = getFirstDayOffset(year, index);
 
-				return (
-					<div key={index} className="month">
-						<div className="days">
-							{[...Array(firstDayOffset).keys()].map((day) => (
-								<div key={`empty-${day}`} className="empty"></div>
-							))}
-							{Array.from({ length: month.days }, (_, i) => {
+					return (
+						<div key={index} className="month">
+							<p className="clickable">{month.name}</p>
+							<div className="days">
+								{[...Array(firstDayOffset).keys()].map((day) => (
+									<div key={`empty-${day}`} className="empty"></div>
+								))}
+								{Array.from({ length: month.days }, (_, i) => {
 
 
-								const day_date = getDate({
-									year: year,
-									month: index,
-									day: i + 1
-								});
+									const day_date = getDate({
+										year: year,
+										month: index,
+										day: i + 1
+									});
 
-								let classname_selected = '';
-								if (current_date) {
-									if (current_date === day_date) {
-										classname_selected = " day-selected"
+									let classname_selected = '';
+									if (current_date) {
+										if (current_date === day_date) {
+											classname_selected = " day-selected"
+										}
 									}
-								}
 
-								let classname_today = '';
-								if (today_date === day_date) {
-									classname_today = " day-today"
-								}
-
-								let classname_has_images = '';
-								if (calendarFiles) {
-									const images = calendarFiles.filter(i => i.linked_date === day_date);
-									if (images.length !== 0) {
-										classname_has_images = ' day-with-files';
+									let classname_today = '';
+									if (today_date === day_date) {
+										classname_today = " day-today"
 									}
-								}
 
-								const classnames = classname_selected + classname_has_images + classname_today
+									let classname_has_images = '';
+									let thumbnail = '';
+									if (calendarFiles && calendarComments) {
+										const images = calendarFiles.filter(i => i.linked_date === day_date);
+										const comments = calendarComments.filter(i => i.linked_date === day_date);
+										if (comments.length !== 0) {
+											classname_has_images = ' day-with-comment';
+										}
+										if(images.length !== 0){
+											thumbnail = images[0].filename;
+											thumbnail = thumbnail.replace("uploads/", "uploads/thumbnails/");
+											classname_has_images = ' day-with-files';
+										}
+									}
 
-								return (
-									<div
-										key={i}
-										className={"day clickable" + classnames}
-										onClick={() => {
-											set_current_date(getDate({
-												year: year,
-												month: index,
-												day: i + 1
-											}));
-											fetchDayFiles(day_date);
-											fetchDayContent(day_date);
-											set_show_fill_day_data(true);
-										}}
-									>
-										{i + 1}
-									</div>
-								)
-							})}
+									const classnames = classname_selected + classname_has_images + classname_today
+
+									return (
+										<div
+											key={i}
+											className={"day clickable" + classnames}
+
+											style={{
+												backgroundImage: `url(https://acolmenero.com/calendar/${thumbnail})`
+											}}
+
+											onClick={() => {
+												set_current_date(getDate({
+													year: year,
+													month: index,
+													day: i + 1
+												}));
+												fetchDayFiles(day_date);
+												fetchDayContent(day_date);
+												set_show_fill_day_data(true);
+											}}
+										>
+											{i + 1}
+										</div>
+									)
+								})}
+							</div>
 						</div>
-					</div>
-				)
-			})}
-			{/* </div>
+					)
+				})}
+				{/* </div>
 			</div> */}
 
-			{
-				current_date
-				&&
-				<div className="popup position-absolute clickable"
-					onClick={handleFileButtonClick}
-				>
-					<i className="bi bi-plus-lg"></i>
+				{
+					current_date
+					&&
+					<div className="popup position-absolute clickable"
+						onClick={handleFileButtonClick}
+					>
+						<i className="bi bi-plus-lg"></i>
 
-					<input
-						type="file"
-						ref={fileInputRef}
-						style={{ display: 'none' }}
-						onChange={handleFileInputChange}
-					/>
-				</div>
-			}
+						<input
+							type="file"
+							ref={fileInputRef}
+							style={{ display: 'none' }}
+							onChange={handleFileInputChange}
+						/>
+					</div>
+				}
 
 
-			{
-				current_date
-				&&
-				<div className="fill-day-data">
+				{
+					current_date
+					&&
+					<div className="fill-day-data">
 
-					<div className="d-flex justify-content-between bg-dark text-light px-2 py-1">
+						<div className="d-flex justify-content-between bg-dark text-light px-2 py-1">
 
-						<div className="">
-							{
-								formatDate(current_date)
-							}
-						</div>
-						<div className="d-flex">
-							<div className="loading-gap">
+							<div className="">
 								{
-									loadingUpdate
-										?
-										<img src={loading_path} alt="" width={"24px"} />
-										:
-										<div className="">
-											{
-												synchronized
-													?
-													<i className="bi text-success bi-house-check"></i>
-													:
-													<i className="bi text-danger bi-house-x"></i>
-											}
+									formatDate(current_date)
+								}
+							</div>
+							<div className="d-flex">
+								<div className="loading-gap">
+									{
+										loadingUpdate
+											?
+											<img src={loading_path} alt="" width={"24px"} />
+											:
+											<div className="">
+												{
+													synchronized
+														?
+														<i className="bi text-success bi-house-check"></i>
+														:
+														<i className="bi text-danger bi-house-x"></i>
+												}
+											</div>
+									}
+
+								</div>
+								<div className="clickable"
+									onClick={() => {
+										set_current_date(undefined)
+									}}
+								>
+
+									<i className="bi bi-x-lg ps-2"></i>
+
+								</div>
+							</div>
+
+						</div>
+
+						<div className="p-2">
+
+							<textarea
+								value={textareaValue}
+								className="flex-1 w-100"
+								onChange={handleTextareaChange}
+							></textarea>
+
+							<div className="files">
+
+								<div
+									className="file text-light p-1 clickable"
+									onClick={handleFileButtonClick}
+								>
+									<i className="bi bi-plus-lg"></i>
+								</div>
+
+								<input
+									type="file"
+									ref={fileInputRef}
+									style={{ display: 'none' }}
+									onChange={handleFileInputChange}
+								/>
+
+								{
+									dayFiles.map((item, index) => {
+
+										return <div
+											key={index} className="file clickable"
+											style={{
+												backgroundImage: `url(https://acolmenero.com/calendar/${item.filename})`
+											}}
+											onClick={() => {
+												setSelectedFile(item)
+											}}
+										>
+
 										</div>
+									})
 								}
 
-							</div>
-							<div className="clickable"
-								onClick={() => {
-									set_current_date(undefined)
-								}}
-							>
-
-								<i className="bi bi-x-lg ps-2"></i>
 
 							</div>
+
 						</div>
 
 					</div>
+				}
 
-					<div className="p-2">
 
-						<textarea
-							value={textareaValue}
-							className="flex-1 w-100"
-							onChange={handleTextareaChange}
-						></textarea>
 
-						<div className="files">
-
-							<div
-								className="file text-light p-1 clickable"
-								onClick={handleFileButtonClick}
-							>
-								<i className="bi bi-plus-lg"></i>
-							</div>
-
-							<input
-								type="file"
-								ref={fileInputRef}
-								style={{ display: 'none' }}
-								onChange={handleFileInputChange}
-							/>
-
-							{
-								dayFiles.map((item, index) => {
-
-									return <div
-										key={index} className="file clickable"
-										style={{
-											backgroundImage: `url(https://acolmenero.com/calendar/${item.filename})`
-										}}
+				{
+					selectedFile
+					&&
+					<div className="panel">
+						<div className="">
+							<div className="preview-header bg-dark text-light p-1">
+								<div className="d-flex justify-content-between px-1">
+									<i
+										className="bi bi-trash2 clickable"
 										onClick={() => {
-											setSelectedFile(item)
+											deleteFile(selectedFile);
 										}}
-									>
-
-									</div>
-								})
-							}
-
-
-						</div>
-
-					</div>
-
-				</div>
-			}
-
-
-
-			{
-				selectedFile
-				&&
-				<div className="panel">
-					<div className="">
-						<div className="preview-header bg-dark text-light p-1">
-							<div className="d-flex justify-content-between px-1">
-								<i
-									className="bi bi-trash2 clickable"
-									onClick={() => {
-										deleteFile(selectedFile);
-									}}
-								></i>
-								<i
-									className="bi bi-x-lg clickable"
-									onClick={() => {
-										setSelectedFile(undefined);
-									}}
-								></i>
+									></i>
+									<i
+										className="bi bi-x-lg clickable"
+										onClick={() => {
+											setSelectedFile(undefined);
+										}}
+									></i>
+								</div>
+							</div>
+							<div className="preview-image">
+								<img
+									src={`https://acolmenero.com/calendar/${selectedFile.filename}`}
+									alt={"preview image"}
+								/>
 							</div>
 						</div>
-						<div className="preview-image">
-							<img
-								src={`https://acolmenero.com/calendar/${selectedFile.filename}`}
-								alt={"preview image"}
-							/>
+					</div>
+				}
+
+				{
+					loadingDaysFiles
+					&&
+					<div className="panel-loading">
+						<div className="loading">
+							<img src={loading_path} alt="" />
 						</div>
 					</div>
-				</div>
-			}
+				}
 
-{
-	loadingDaysFiles
-	&&
-	<div className="panel-loading">
-		<div className="loading">
-			<img src={loading_path} alt="" />
-		</div>
-	</div>
-}
+			</div>
 
-		</div>
+
+		</main>
 
 	);
 };

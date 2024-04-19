@@ -15,14 +15,28 @@ textarea {
     /* background-color: rgb(238, 232, 232); */
 }
 
-.calendar {
-
+main {
     height: 100svh;
+    overflow-y: scroll;
+}
 
+.calendar_2x6 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    /* grid-gap: 10px; */
+}
+.calendar_1x12 {
+    /* display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(6, 1fr); */
+}
+.calendar_1x12 .month{
+    height: calc(100svh / 2);
+    display: flex;
+    flex-direction: column;
+}
+.calendar_1x12 .days{
+    flex: 1;
 }
 
 /* .month {
@@ -42,14 +56,18 @@ textarea {
 }
 
 .day {
-    /* padding: 5px; */
-    /* border: 1px solid #ccc; */
     text-align: center;
-    background-color: rgb(234, 234, 234);
+    border-top: 2px solid rgb(211, 211, 211);
+    border-right: 2px solid rgb(211, 211, 211);
+    /* border-right: 2px solid rgb(211, 211, 211); */
+    
 }
+
 
 .empty {
     flex-basis: calc(100% / 7);
+    border-top: 2px solid rgb(211, 211, 211);
+    border-right: 2px solid rgb(211, 211, 211);
 }
 
 .popup {
@@ -80,17 +98,30 @@ textarea {
 }
 
 .day-selected {
-    background-color: red;
+    /* background-color: rgb(253, 183, 183); */
+    border: 2px dashed grey;
 }
 
+.day-with-comment {
+
+    border: 2px solid rgb(53, 0, 0);
+    border-radius: 4px;
+}
 .day-with-files {
     /* color: rgb(255, 111, 205); */
     border: 2px solid rgb(53, 0, 0);
     border-radius: 4px;
+
+    background-size: cover;
+	background-position: center;
+    color: white;
+    /* font-size: 1.4rem;
+    -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black; */
 }
 
 .day-today {
-    background-color: rgb(111, 173, 255) !important;
+    color: rgb(35, 116, 229) !important;
 }
 
 .fill-day-data {
